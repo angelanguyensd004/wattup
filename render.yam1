@@ -1,6 +1,9 @@
+version: 1
 services:
   - type: web
-    name: your-service-name
+    name: my-awesome-app
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "wattup"
+    startCommand: "wattup" 
+    plan: free 
+  
