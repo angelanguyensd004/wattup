@@ -1,9 +1,10 @@
 version: 1
 services:
   - type: web
-    name: my-awesome-app
+    name: wattup-app
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "wattup" 
-    plan: free 
-  
+    startCommand: "wattup"  
+    plan: free  
+    env:
+    port: 8000  
