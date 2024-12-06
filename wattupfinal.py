@@ -46,7 +46,7 @@ for filepath in filepaths_load:
         df = pd.read_csv(filepath, encoding="utf-8")
         print(f"Loaded {filepath} with shape: {df.shape}")
 
-        df["Date"] = pd.to_datetime(df["Date"])  #ensure correct column
+        df["Date"] = pd.to_datetime(df["Date"])  #to ensure correct column
         df["Year"] = df["Date"].dt.year
         df["Month"] = df["Date"].dt.month
 
@@ -65,7 +65,7 @@ if df["Date"].dtype == "object":  #check if the column is of type object
 
 #convert column date to datetime format just in case if string og 
 df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
-# Combine all monthly average load data
+#combine all monthly average load data
 if load_data:
     all_load_data = pd.concat(load_data, ignore_index=True)
 else:
@@ -90,7 +90,7 @@ if weather_data:
 else:
     print("No weather data was loaded.")
 
-#merge the two DataFrames year and month
+#merge the two DataFrames (year and month)
 if load_data and weather_data:
     merged_data = pd.merge(all_load_data, all_weather_data, on=["Year", "Month"])
 else:
@@ -104,7 +104,7 @@ for filepath in filepaths_true:
         print(f"Loaded {filepath} with shape: {df.shape}")
         print("Columns found:", df.columns.tolist())  
 
-        #clean column names
+        #clean column names... super messy
         df.columns = df.columns.str.strip()
 
         if "Date" in df.columns:
@@ -146,7 +146,7 @@ fig.add_trace(go.Scatter(
     yaxis="y1"
 ))
 
-# temperature as a line trace
+#temperature as a line trace.. idk looks nicer
 fig.add_trace(go.Scatter(
     x=merged_data["Year"].astype(str) + '-' + merged_data["Month"].astype(str),
     y=merged_data["Temperature"],
@@ -156,7 +156,7 @@ fig.add_trace(go.Scatter(
     yaxis="y2"
 ))
 
-#update layout 
+#update layout for page
 fig.update_layout(
     title="Energy Consumption plotted with Temperature (2019-2023)",
     xaxis=dict(title="Year", tickmode="array"),
@@ -167,36 +167,34 @@ fig.update_layout(
 #convert to HTML
 layout_html = pio.to_html(fig, full_html=False)
 
-
-#fancy feature engineering! 
 merged_data["Year_Month"] = merged_data["Year"].astype(str) + '-' + merged_data['Month'].astype(str)
 merged_data["Month_Sin"] = (merged_data["Month"] % 12) / 12 * (2 * 3.14159)
 merged_data["Month_Cos"] = (merged_data["Month"] % 12) / 12 * (2 * 3.14159)
 
-#linear regression model
+#linear regression model for energy consumption 
 X = merged_data[["Temperature", "Month_Sin", "Month_Cos"]]
 y = merged_data["Energy_Consumption"]
 
-#divide the data into training and test sets
+#divide the data (training and test sets)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 #fit the model
 model = LinearRegression()
 model.fit(X_train, y_train)
 
-#make predictions on the test set
+#predictions on the test set
 y_pred = model.predict(X_test)
 
-#test the model
+#testing the model
 rmse = mean_squared_error(y_test, y_pred, squared=False)
 print(f'RMSE: {rmse}')
 
 #forecast for 2024
-#added an adjustment for temperatures to reflect seasonal patterns
+#added an adjustment for temperatures to reflect seasonal patterns in San Diego (can be changed by year/updated forecasts)
 weather_2024 = pd.DataFrame({
     "Year": 2024,
     "Month": range(1, 13),
-    "Temperature": [57, 59, 60, 62, 65, 75, 78, 80, 70, 68, 61, 55]  # predicted temperatures from historical data (2019-2023)
+    "Temperature": [57, 59, 60, 62, 65, 75, 78, 80, 70, 68, 61, 55]  #predicted temperatures from historical data (2019-2023)
 })
 
 weather_2024["Month_Sin"] = (weather_2024["Month"] % 12) / 12 * (2 * 3.14159)
@@ -206,7 +204,7 @@ weather_2024["Month_Cos"] = (weather_2024["Month"] % 12) / 12 * (2 * 3.14159)
 X_2024 = weather_2024[['Temperature', 'Month_Sin', 'Month_Cos']]
 forecasted_load = model.predict(X_2024)
 
-#seasonal adjustments
+#seasonal adjustments based off changing climate, can be changed to reflect current weather
 forecasted_load[0] *= 1.10  # January
 forecasted_load[1] *= 1.05  # February 
 forecasted_load[2] *= 0.95  # March
@@ -317,7 +315,7 @@ average_energy["ZipCode"] = average_energy["ZipCode"].astype(str)
 
 merged_data = pd.merge(average_energy, income_zip, on="ZipCode")
 
-# Scatter plot with median income and average kWh
+#scatter plot with median income and average kWh
 fig_scatter = px.scatter(
     merged_data, 
     x="ZipCode", 
@@ -351,7 +349,7 @@ trendline_html = pio.to_html(fig_trendline, full_html=False)
 
 dataframes = []
 
-#created loop to load DataFrames 
+#create loop to load DataFrames 
 for filepath in filepaths_load:
     try:
         df = pd.read_csv(filepath, encoding="utf-8")
@@ -366,22 +364,22 @@ for filepath in filepaths_load:
         #make "Date" column to datetime format
         df["Date"] = pd.to_datetime(df["Date"], errors='coerce')
         
-        # Create 'Weekday' column
+        #create 'Weekday' column
         df["Weekday"] = df["Date"].dt.day_name()
         
-        # Append the DataFrame to the list
+        #append the DataFrame to list
         dataframes.append(df)
 
-        # Print the shape of the DataFrame to verify loading
+        #verify loading
         print(f"Loaded {filepath} with shape: {df.shape}")
         
     except Exception as e:
         print(f"Error processing {filepath}: {e}")
 
-# check to see if dataframes list is empty before concatenating
+#check if dataframes list is empty before concatenating
 if dataframes:
     combined_data = pd.concat(dataframes, ignore_index=True)
-    print("DataFrames concatenated successfully - let's gooooo.")
+    print("DataFrames concatenated successfully - let's gooooo!.")
 else:
     print("No DataFrames to concatenate.")
 
@@ -417,7 +415,7 @@ else:
 fiveyear_html = pio.to_html(fig_fiveyear, full_html=False)
 
 
-#!!!!start of dash page!!!
+#!!!!start of dash page... enter in HTML, bye Python!!!
 
 
 #layout for the home page
